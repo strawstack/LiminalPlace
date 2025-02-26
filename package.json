@@ -1,0 +1,11 @@
+{
+  "name": "6-hotpocket",
+  "module": "server.js",
+  "type": "module",
+  "scripts": {
+    "dev": "bun run server.js"
+  },
+  "dependencies": {
+    "three": "^0.170.0"
+  }
+}

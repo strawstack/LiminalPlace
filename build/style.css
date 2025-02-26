@@ -1,0 +1,16 @@
+html, body {
+    padding: 0px;
+    margin: 0px;
+}
+
+body {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.viewport {
+    width: 1200px;
+    height: 700px;
+}
