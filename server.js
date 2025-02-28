@@ -52,7 +52,7 @@ async function restartServer() {
 await restartServer();
 
 watch(
-    './src',
+    './main.js',
     { recursive: true },
     async (event, filename) => {
         if (!starting) await restartServer();

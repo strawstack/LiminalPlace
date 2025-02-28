@@ -1,34 +1,15 @@
 import * as THREE from 'three';
+
 import { FirstPersonControls } from 'three/addons/controls/FirstPersonControls.js';
 import { FlyControls } from 'three/addons/controls/FlyControls.js';
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
 
-import { helper } from './helper';
-
-import {
-    WIDTH,
-    HEIGHT,
-    createWalls
-} from './kruskal/main';
-
-import { firstPersonMovement } from "./firstPersonMovement";
-
-import { fog } from './fog/main';
-
-import { grassMaterial } from './grass/material';
-
 (() => {
-    const help = helper();
-    const {
-        getKeys,
-        startMouseLock
-    } = help;
 
     function main() {
         const scene = new THREE.Scene();
         const clock = new THREE.Clock();
-        // const { fog_material, fogAnimate } = fog({ scene, clock });
-        
+
         const viewport = document.querySelector(".viewport");
         const view_size = viewport.getBoundingClientRect();
         
@@ -61,7 +42,7 @@ import { grassMaterial } from './grass/material';
             MINE: 3,
             PTR: 4
         };
-        const ctrls = CONTROLS.PTR;
+        const ctrls = CONTROLS.FPS;
 
         const fpsControls = new FirstPersonControls(camera, renderer.domElement);
         fpsControls.lookSpeed = 0.5;
@@ -74,11 +55,9 @@ import { grassMaterial } from './grass/material';
         const ptrControls = new PointerLockControls(camera, renderer.domElement);
         ptrControls.pointerSpeed = 1;
     
-        viewport.addEventListener( 'click', () => {
+        viewport.addEventListener('click', () => {
             ptrControls.lock();
         });
-
-        const { material } = grassMaterial();
 
         const floor = new THREE.Mesh(
             new THREE.BoxGeometry( WIDTH, 1, HEIGHT ),
@@ -89,8 +68,6 @@ import { grassMaterial } from './grass/material';
         floor.position.z = HEIGHT/2;
 
         scene.add( floor );
-
-        createWalls({ scene });
 
         function onWindowResize() {
             // camera.aspect = window.innerWidth / window.innerHeight;
@@ -116,8 +93,7 @@ import { grassMaterial } from './grass/material';
             }
             
             renderer.render( scene, camera );
-            // fogAnimate();
-        } 
+        }
         renderer.setAnimationLoop( animate );
     }
 
