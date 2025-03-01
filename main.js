@@ -1,14 +1,15 @@
 import * as THREE from 'three';
-
-import { FirstPersonControls } from 'three/addons/controls/FirstPersonControls.js';
-import { FlyControls } from 'three/addons/controls/FlyControls.js';
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
+// import { FlyControls } from 'three/addons/controls/FlyControls.js';
 
 (() => {
 
     function main() {
         const scene = new THREE.Scene();
         const clock = new THREE.Clock();
+
+        const WIDTH = 1280;
+        const HEIGHT = 700;
 
         const viewport = document.querySelector(".viewport");
         const view_size = viewport.getBoundingClientRect();
@@ -17,84 +18,134 @@ import { PointerLockControls } from 'three/addons/controls/PointerLockControls.j
             75, view_size.width / view_size.height, 0.1, 1000
         );
 
-        camera.position.x = WIDTH/2;
+        camera.position.x = 0;
         camera.position.y = 2;
-        camera.position.z = HEIGHT/2;
+        camera.position.z = 0;
 
-        const camera2 = new THREE.PerspectiveCamera( 
-            75, view_size.width / view_size.height, 0.1, 1000
-        );
-
-        camera2.position.x = WIDTH/2;
-        camera2.position.y = 400;
-        camera2.position.z = HEIGHT/2;
-        camera2.rotateX(-1 * Math.PI/2);
-        
         const renderer = new THREE.WebGLRenderer({
             canvas: viewport
         });
         renderer.setSize( view_size.width, view_size.height );
 
-        const CONTROLS = { 
-            FPS: 0,
-            FLY: 1,
-            ORBIT: 2,
-            MINE: 3,
-            PTR: 4
-        };
-        const ctrls = CONTROLS.FPS;
-
-        const fpsControls = new FirstPersonControls(camera, renderer.domElement);
-        fpsControls.lookSpeed = 0.5;
-        fpsControls.movementSpeed = 4;
-
-        const flyControls = new FlyControls(camera, renderer.domElement);
-        flyControls.movementSpeed = 1;
-        flyControls.rollSpeed = 0.05;
-
-        const ptrControls = new PointerLockControls(camera, renderer.domElement);
-        ptrControls.pointerSpeed = 1;
-    
-        viewport.addEventListener('click', () => {
-            ptrControls.lock();
-        });
-
         const floor = new THREE.Mesh(
             new THREE.BoxGeometry( WIDTH, 1, HEIGHT ),
-            material
+            new THREE.MeshBasicMaterial({color: 0xFF0000})
         );
-        floor.position.x = WIDTH/2;
+        floor.position.x = 0;
         floor.position.y = -1;
-        floor.position.z = HEIGHT/2;
-
+        floor.position.z = 0;
         scene.add( floor );
 
-        function onWindowResize() {
-            // camera.aspect = window.innerWidth / window.innerHeight;
-            // camera.updateProjectionMatrix();
-            // renderer.setSize( window.innerWidth, window.innerHeight );
-            fpsControls.handleResize();
-        }
-        window.addEventListener( 'resize', onWindowResize );
+        const cube = new THREE.Mesh(
+            new THREE.BoxGeometry( 1, 1, 1 ),
+            new THREE.MeshBasicMaterial({color: 0x00FF00})
+        );
+        cube.position.x = 0;
+        cube.position.y = 2;
+        cube.position.z = -5;
+        scene.add( cube );
+        
+        const pc = new PointerLockControls( camera, renderer.domElement );
+        pc.lookSpeed = 0.5;
+
+        viewport.addEventListener( 'click', () => {
+            pc.lock();
+        });
+
+        const { animate: animateControls } = movement(pc);
 
         function animate() {
-            switch (ctrls) {
-                case CONTROLS.FPS:
-                    fpsControls.update( clock.getDelta() );
-                    break;
-                case CONTROLS.FLY:
-                    flyControls.update( clock.getDelta() );
-                    break;
-                case CONTROLS.ORBIT:
-                    break;
-                case CONTROLS.PTR:
-                    ptrControls.update( clock.getDelta() );
-                    break;  
-            }
-            
+            animateControls();
+            pc.update( clock.getDelta() );
             renderer.render( scene, camera );
         }
         renderer.setAnimationLoop( animate );
+    }
+
+    function movement(controls) {
+
+        const MOVE_SPEED = 50;
+        let prevTime = performance.now();
+        const velocity = new THREE.Vector3();
+        const direction = new THREE.Vector3();
+        let moveForward = false;
+        let moveBackward = false;
+        let moveLeft = false;
+        let moveRight = false;
+
+        const onKeyDown = function ( event ) {
+            switch ( event.code ) {
+                case 'ArrowUp':
+                case 'KeyW':
+                    moveForward = true;
+                    break;
+
+                case 'ArrowLeft':
+                case 'KeyA':
+                    moveLeft = true;
+                    break;
+
+                case 'ArrowDown':
+                case 'KeyS':
+                    moveBackward = true;
+                    break;
+
+                case 'ArrowRight':
+                case 'KeyD':
+                    moveRight = true;
+                    break;
+            }
+        };
+
+        const onKeyUp = function ( event ) {
+            switch ( event.code ) {
+                case 'ArrowUp':
+                case 'KeyW':
+                    moveForward = false;
+                    break;
+
+                case 'ArrowLeft':
+                case 'KeyA':
+                    moveLeft = false;
+                    break;
+
+                case 'ArrowDown':
+                case 'KeyS':
+                    moveBackward = false;
+                    break;
+
+                case 'ArrowRight':
+                case 'KeyD':
+                    moveRight = false;
+                    break;
+            }
+        };
+
+        document.addEventListener( 'keydown', onKeyDown );
+        document.addEventListener( 'keyup', onKeyUp );
+
+        return {
+            animate: () => {
+                const time = performance.now();
+                if ( controls.isLocked === true ) {
+                    direction.z = Number( moveForward ) - Number( moveBackward );
+                    direction.x = Number( moveRight ) - Number( moveLeft );
+                    direction.normalize();
+
+                    const delta = ( time - prevTime ) / 1000;
+
+                    velocity.x -= velocity.x * 10.0 * delta;
+					velocity.z -= velocity.z * 10.0 * delta;
+
+                    if ( moveForward || moveBackward ) velocity.z -= direction.z * MOVE_SPEED * delta;
+                    if ( moveLeft || moveRight ) velocity.x -= direction.x * MOVE_SPEED * delta;
+
+                    controls.moveRight( - velocity.x * delta );
+                    controls.moveForward( - velocity.z * delta );
+                }
+                prevTime = time;
+            }
+        };
     }
 
     main();
