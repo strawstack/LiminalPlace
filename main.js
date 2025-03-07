@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
 // import { FlyControls } from 'three/addons/controls/FlyControls.js';
 
@@ -34,7 +35,7 @@ import { PointerLockControls } from 'three/addons/controls/PointerLockControls.j
         floor.position.x = 0;
         floor.position.y = -1;
         floor.position.z = 0;
-        scene.add( floor );
+        // scene.add( floor );
 
         const cube = new THREE.Mesh(
             new THREE.BoxGeometry( 1, 1, 1 ),
@@ -43,7 +44,7 @@ import { PointerLockControls } from 'three/addons/controls/PointerLockControls.j
         cube.position.x = 0;
         cube.position.y = 2;
         cube.position.z = -5;
-        scene.add( cube );
+        // scene.add( cube );
         
         const pc = new PointerLockControls( camera, renderer.domElement );
         pc.lookSpeed = 0.5;
@@ -53,6 +54,18 @@ import { PointerLockControls } from 'three/addons/controls/PointerLockControls.j
         });
 
         const { animate: animateControls } = movement(pc);
+
+        function gltf() {
+            const gltfLoader = new GLTFLoader();
+            const url = 'scene.glb';
+            gltfLoader.load(url, (gltf) => {
+              const root = gltf.scene;
+              scene.add(root);
+              console.log(dumpObject(root).join('\n'));
+            });
+        }
+
+        gltf();
 
         function animate() {
             animateControls();
@@ -147,6 +160,18 @@ import { PointerLockControls } from 'three/addons/controls/PointerLockControls.j
             }
         };
     }
+
+    function dumpObject(obj, lines = [], isLast = true, prefix = '') {
+        const localPrefix = isLast ? '└─' : '├─';
+        lines.push(`${prefix}${prefix ? localPrefix : ''}${obj.name || '*no-name*'} [${obj.type}]`);
+        const newPrefix = prefix + (isLast ? '  ' : '│ ');
+        const lastNdx = obj.children.length - 1;
+        obj.children.forEach((child, ndx) => {
+          const isLast = ndx === lastNdx;
+          dumpObject(child, lines, isLast, newPrefix);
+        });
+        return lines;
+      }
 
     main();
 
