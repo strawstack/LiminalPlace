@@ -4,6 +4,8 @@ A Three JS tool project.
 
 # Resources
 
-https://threejs.org/manual/#en/load-gltf
+- GLTF Loader: https://threejs.org/manual/#en/load-gltf
 
-https://threejs.org/editor/
+- Online Editor: https://threejs.org/editor/
+
+- FPS Controls: https://threejs.org/examples/?q=fps#games_fps
