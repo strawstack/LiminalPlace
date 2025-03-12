@@ -379,7 +379,7 @@ function controls( deltaTime ) {
 
 const loader = new GLTFLoader();
 
-loader.load( 'world.glb', ( gltf ) => {
+loader.load( 'house.glb', ( gltf ) => {
 
     scene.add( gltf.scene );
 
@@ -398,6 +398,8 @@ loader.load( 'world.glb', ( gltf ) => {
 
             }
 
+        } else if ( child.isLight ) {
+            child.intensity = 10.0;
         }
 
     } );
