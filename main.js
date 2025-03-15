@@ -206,7 +206,13 @@ function updatePlayer( deltaTime ) {
 
     playerCollisions();
 
-    camera.position.copy( playerCollider.end );
+    const target = new THREE.Vector3(
+        playerCollider.end.x, 
+        playerCollider.end.y + 0.5,
+        playerCollider.end.z);
+    // console.log(target)
+    // camera.position.copy( playerCollider.end );
+    camera.position.copy( target );
 
 }
 
